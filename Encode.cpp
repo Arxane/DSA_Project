@@ -66,6 +66,8 @@ void Build_Minheap(vector<Node *> &A, int length) {
 
 // Store code for each character in a vector
 void store_codes(Node *Root, char single_code[], int index, vector<long long int> &Huffman_codemap) {
+    // single_code[] stores huffmann code path, as we build it
+    //Now we traverse tree
     if (Root->left) {
         single_code[index] = '0';
         store_codes(Root->left, single_code, index + 1, Huffman_codemap);
@@ -74,13 +76,14 @@ void store_codes(Node *Root, char single_code[], int index, vector<long long int
         single_code[index] = '1';
         store_codes(Root->right, single_code, index + 1, Huffman_codemap);
     }
+    //if we reach a leaf node
     if (!Root->left && !Root->right) {
         for (int i = index; i >= 0; i--) {
             if (i != index) {
-                Huffman_codemap[Root->character] *= 10;
-                Huffman_codemap[Root->character] += single_code[i] - '0';
+                Huffman_codemap[Root->character] *= 10; //shift to left by one to make room for further encoding
+                Huffman_codemap[Root->character] += single_code[i] - '0'; //character from code[i] converted to integer
             } else
-                Huffman_codemap[Root->character] = 1;
+                Huffman_codemap[Root->character] = 1; //initialise by 1 meaning the code has been assigned
         }
     }
 }
@@ -90,8 +93,9 @@ void store_tree(ofstream &output, Node *Root) {
     if (!Root->left && !Root->right) {
         output << '1';
         output << Root->character;
+     // using '1' for leaf nodes helps program differentiate between leaf nodes and internal nodes   
     } else {
-        output << '0';
+        output << '0'; //writes 0 to signify internal nodes
         store_tree(output, Root->left);
         store_tree(output, Root->right);
     }
@@ -105,7 +109,7 @@ Node *Huffman(long long int Count[]) {
             minheap.push_back(new Node(i, Count[i]));
     Build_Minheap(minheap, minheap.size() - 1);
     while (minheap.size() != 1) {
-        Node *Z = new Node(-1, 0, Extract_min(minheap), Extract_min(minheap));
+        Node *Z = new Node(-1, 0, Extract_min(minheap), Extract_min(minheap)); //-1 acts as placeholder, and 0 as temporary frequency, and frequency is then set to sum of child frequencies
         Z->Freq = Z->left->Freq + Z->right->Freq;
         Insert_MinHeap(minheap, Z);
     }
@@ -114,24 +118,24 @@ Node *Huffman(long long int Count[]) {
 
 // Write compressed data to file
 void Write_compressed(ifstream &input, ofstream &output, vector<long long int> &Huffman_codemap) {
-    char ch;
-    unsigned char bits_8 = 0;
-    long long int counter = 0;
+    char ch; //temporary variable to store each character
+    unsigned char bits_8 = 0; //8-bit buffer
+    long long int counter = 0; //keeps track of current bits
     while (input.get(ch)) {
         long long int temp = Huffman_codemap[static_cast<unsigned char>(ch)];
-        while (temp != 1) {
-            bits_8 <<= 1;
-            if ((temp % 10) != 0)
-                bits_8 |= 1;
-            temp /= 10;
+        while (temp != 1) { //iterates through each bit
+            bits_8 <<= 1; //shifts left by one position
+            if ((temp % 10) != 0) //checks if last digit is 1
+                bits_8 |= 1; //sets least significant bit as 1
+            temp /= 10; //removes last bit from temp
             counter++;
-            if (counter == 8) {
-                output << bits_8;
-                counter = bits_8 = 0;
+            if (counter == 8) { //full byte hasbeen accumulated
+                output << bits_8; //writes full byte
+                counter = bits_8 = 0; //resets counter and bits
             }
         }
     }
-    while (counter != 8) {
+    while (counter != 8) { //pads bits with 0s on right
         bits_8 <<= 1;
         counter++;
     }

@@ -38,23 +38,23 @@ void decode(ifstream &input, const string &output_filename, Node *Root, long lon
         exit(-1);
     }
 
-    bool eof_flag = false;
-    char bits_8;
+    bool eof_flag = false; //flag to denote end of decoding
+    char bits_8; //varaiable to hold data from input
     Node *pointer = Root;
-    while (input.get(bits_8)) {
+    while (input.get(bits_8)) { //read one byte at a time
         int counter = 7;
         while (counter >= 0) {
-            if (!pointer->left && !pointer->right) {
+            if (!pointer->left && !pointer->right) { //checks for leaf node, which represents actual characters
                 output << pointer->character;
                 Total_Freq--;
-                if (!Total_Freq) {
+                if (!Total_Freq) { //checks if all characters have been decoded
                     eof_flag = true;
                     break;
                 }
-                pointer = Root;
+                pointer = Root; //back to root to start decoding again
                 continue;
             }
-            if ((bits_8 & (1 << counter))) {
+            if ((bits_8 & (1 << counter))) { //checks if bit is 1 or 0
                 pointer = pointer->right;
             } else {
                 pointer = pointer->left;
@@ -68,7 +68,7 @@ void decode(ifstream &input, const string &output_filename, Node *Root, long lon
 
 // Main function to decompress a file
 bool decompressFile(const string &input_filename, const string &output_filename) {
-    if (input_filename.find(".huf") == string::npos) {
+    if (input_filename.find(".huf") == string::npos) { //checks if the file has correct extension
         cerr << "Error: File does not have a .huf extension.\n";
         return false;
     }
@@ -85,9 +85,10 @@ bool decompressFile(const string &input_filename, const string &output_filename)
     long long int Total_freq = 0;
     char ch;
     while (input_file.get(ch)) {
-        if (ch == ',') break;
+        if (ch == ',') break; 
         Total_freq *= 10;
         Total_freq += ch - '0';
+        //coverts sequence of characters into integers
     }
 
     Node *Huffman_tree = Make_Huffman_tree(input_file);

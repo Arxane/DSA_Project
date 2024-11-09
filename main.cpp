@@ -14,9 +14,10 @@
 #include "Encode.h"
 #include "Decode.h"
 #include <iomanip>
+//FLTK header for GUI, standar headers and Encode.h and Decode.h that contain CompressFile and DecompressFile functions
 using namespace std;
 
-class CompressionGraph : public Fl_Widget {
+class CompressionGraph : public Fl_Widget { //class to show graph of compression ratios
 private:
     vector<pair<long long, long long>> points; // Input size, Output size pairs
     long long max_size;
@@ -162,7 +163,7 @@ public:
     Fl_Text_Buffer *status_buffer;
     CompressionGraph *graph;
 
-    FileCompressorDecompressor(int width, int height, const char *title)
+    FileCompressorDecompressor(int width, int height, const char *title) //creates widgets for I/O fields, buttons, status display and compression graph
         : window(new Fl_Window(width, height, title)),
           compress_button(new Fl_Button(50, 150, 150, 40, "Compress File")),
           decompress_button(new Fl_Button(210, 150, 150, 40, "Decompress File")),
@@ -235,14 +236,15 @@ private:
     }
 
     static void Compress_Callback(Fl_Widget *widget, void *data) {
+        // Cast `data` to `FileCompressorDecompressor*` to access UI components and methods in the main application.
         FileCompressorDecompressor *fc = (FileCompressorDecompressor *)data;
         
-        const char *input_file = fl_file_chooser("Select a text file", "*.txt", nullptr);
+        const char *input_file = fl_file_chooser("Select a text file", "*.txt", nullptr); //open a file chooser dialog for user to select a text file
         if (!input_file) return;
         fc->input_file_path->value(input_file);
         long long initial_size = getFileSize(input_file);
 
-        const char *output_file = fl_file_chooser("Save compressed file as", "*.huf", nullptr);
+        const char *output_file = fl_file_chooser("Save compressed file as", "*.huf", nullptr); //dialog to choose output file for user to select a huf file
         if (!output_file) return;
         fc->output_file_path->value(output_file);
 
@@ -252,7 +254,7 @@ private:
             updateStatus(fc, "Error: Could not read input file size\n");
             return;
         }
-
+        //time calculation
         auto start = std::chrono::high_resolution_clock::now();
         bool success = compressFile(fc->input_file_path->value(), fc->output_file_path->value());
         auto end = std::chrono::high_resolution_clock::now();
@@ -283,6 +285,7 @@ private:
     }
 
     static void Decompress_Callback(Fl_Widget *widget, void *data) {
+        // Cast the `data` parameter to `FileCompressorDecompressor*` so we can access the app's components.
         FileCompressorDecompressor *fc = (FileCompressorDecompressor *)data;
         
         const char *input_file = fl_file_chooser("Select a compressed file", "*.huf", nullptr);
@@ -301,12 +304,12 @@ private:
             return;
         }
 
-        auto start = std::chrono::high_resolution_clock::now();
-        bool success = decompressFile(fc->input_file_path->value(), fc->output_file_path->value());
-        auto end = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now(); //record start time 
+        bool success = decompressFile(fc->input_file_path->value(), fc->output_file_path->value()); //call decompressFile, passing the input and output and store the value in success
+        auto end = std::chrono::high_resolution_clock::now(); //record end time
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-        if (success) {
+        if (success) { //if decompressionn is successful
             long long final_size = getFileSize(output_file);
             if (final_size == -1) {
                 updateStatus(fc, "File decompressed but couldn't read decompressed size\n");

@@ -30,7 +30,7 @@ This project implements a data compression and decompression system using Huffma
 -> The program displays compression ratio and execution time, allowing users to analyze compression effeciency.
 
 # Resume Points
-- Built a lossless file compression tool using Huffman coding with a custom min-heap, achieving optimal prefix-free encoding via a greedy algorithm.
+- Built a lossless file compression tool using Huffman coding with a custom min-heap for optimal prefix-free encoding via a greedy algorithm, achieving up to 54% reduction in file size.
 - Implemented bit-level I/O and Huffman tree serialization for encoding/decoding compressed files with full data integrity.
 - Developed an FLTK-based desktop GUI with file dialogs, real-time compression-ratio graphing, and performance metrics display.
 
